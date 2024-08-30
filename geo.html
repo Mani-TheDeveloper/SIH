@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyderabad Map with Red Zone Geo-Fencing</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+            border: 2px solid #333;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .leaflet-popup-content-wrapper {
+            background: #333;
+            color: white;
+            font-weight: bold;
+            border-radius: 10px;
+        }
+        .leaflet-popup-tip {
+            background: #333;
+        }
+        .geofence {
+            color: red;
+            fillColor: red;
+            fillOpacity: 0.3;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        input {
+            margin: 5px;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Red Zone Geo-Fencing</h1>
+
+    <div class="form-container">
+        <label for="lat">Latitude of Center:</label>
+        <input type="text" id="lat" value="17.3850">
+        <label for="lng">Longitude of Center:</label>
+        <input type="text" id="lng" value="78.4867">
+        <label for="radius">Radius (meters):</label>
+        <input type="text" id="radius" value="5000">
+        <button onclick="updateMap()">Update Map</button>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        var map;
+        var geoFence;
+        var userMarkers = [];
+
+        // Function to initialize the map
+        function initializeMap() {
+            map = L.map('map').setView([17.3850, 78.4867], 12);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            geoFence = L.circle([17.3850, 78.4867], {
+                color: 'red',
+                fillColor: 'red',
+                fillOpacity: 0.3,
+                radius: 5000
+            }).addTo(map).bindPopup('Red Zone: Hyderabad');
+        }
+
+        // Function to generate random users within the red zone
+        function generateRandomUsers(centerLat, centerLng, radius, numUsers) {
+            var users = [];
+            var radiusInDegrees = radius / 111300; // Convert radius from meters to degrees
+
+            for (var i = 0; i < numUsers; i++) {
+                var angle = Math.random() * 2 * Math.PI;
+                var distance = Math.random() * radiusInDegrees;
+                var userLat = centerLat + distance * Math.cos(angle);
+                var userLng = centerLng + distance * Math.sin(angle);
+
+                users.push({
+                    name: 'User ' + (i + 1),
+                    lat: userLat,
+                    lng: userLng
+                });
+            }
+
+            return users;
+        }
+
+        // Function to update the map based on user input
+        function updateMap() {
+            var centerLat = parseFloat(document.getElementById('lat').value);
+            var centerLng = parseFloat(document.getElementById('lng').value);
+            var radius = parseFloat(document.getElementById('radius').value);
+
+            // Remove previous red zone and user markers
+            if (geoFence) {
+                map.removeLayer(geoFence);
+            }
+            userMarkers.forEach(function(marker) {
+                map.removeLayer(marker);
+            });
+            userMarkers = [];
+
+            // Add new red zone
+            geoFence = L.circle([centerLat, centerLng], {
+                color: 'red',
+                fillColor: 'red',
+                fillOpacity: 0.3,
+                radius: radius
+            }).addTo(map).bindPopup('Red Zone Center: (' + centerLat + ', ' + centerLng + ')');
+
+            // Generate and add new user markers
+            var users = generateRandomUsers(centerLat, centerLng, radius, 10);
+            users.forEach(function(user) {
+                var marker = L.marker([user.lat, user.lng], {
+                    icon: L.divIcon({
+                        className: 'custom-icon',
+                        html: `<div style="background-color:#f03;color:white;width:20px;height:20px;border-radius:50%;text-align:center;line-height:20px;">${user.name.charAt(5)}</div>`,
+                    })
+                }).addTo(map).bindPopup(`${user.name}`, {
+                    closeButton: false
+                });
+                userMarkers.push(marker);
+            });
+
+            map.setView([centerLat, centerLng], 12);
+        }
+
+        // Initialize the map on page load
+        initializeMap();
+    </script>
+
+</body>
+</html>
