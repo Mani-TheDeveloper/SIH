@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Hopping</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+        .hop-line {
+            color: blue;
+            weight: 3;
+            dashArray: '5, 10';
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Multi-Hopping</h1>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        var map = L.map('map').setView([17.3850, 78.4867], 13);
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Function to generate random users within a specified radius
+        function generateRandomUsers(centerLat, centerLng, radius, numUsers) {
+            var users = [];
+            var radiusInDegrees = radius / 111300; // Convert radius from meters to degrees
+
+            for (var i = 0; i < numUsers; i++) {
+                var angle = Math.random() * 2 * Math.PI;
+                var distance = Math.random() * radiusInDegrees;
+                var userLat = centerLat + distance * Math.cos(angle);
+                var userLng = centerLng + distance * Math.sin(angle);
+
+                users.push({
+                    name: 'User ' + (i + 1),
+                    lat: userLat,
+                    lng: userLng
+                });
+            }
+
+            return users;
+        }
+
+        // Function to find the nearest neighbor for each user
+        function findNearestNeighbors(users) {
+            var hops = [];
+
+            for (var i = 0; i < users.length - 1; i++) {
+                var user1 = users[i];
+                var nearestNeighbor = null;
+                var minDistance = Infinity;
+
+                for (var j = i + 1; j < users.length; j++) {
+                    var user2 = users[j];
+                    var distance = Math.sqrt(Math.pow(user2.lat - user1.lat, 2) + Math.pow(user2.lng - user1.lng, 2));
+
+                    if (distance < minDistance) {
+                        nearestNeighbor = user2;
+                        minDistance = distance;
+                    }
+                }
+
+                if (nearestNeighbor) {
+                    hops.push([user1, nearestNeighbor]);
+                }
+            }
+
+            return hops;
+        }
+
+        // Function to animate the hop lines between users
+        function animateHops(hops, index = 0) {
+            if (index < hops.length) {
+                var hop = hops[index];
+                var polyline = L.polyline([[hop[0].lat, hop[0].lng], [hop[1].lat, hop[1].lng]], {
+                    color: 'red',
+                    weight: 4,
+                    dashArray: '5, 5'
+                }).addTo(map)
+                .bindPopup('Hopping from ' + hop[0].name + ' to ' + hop[1].name)
+                .openPopup();
+
+                setTimeout(function() {
+                    polyline.remove(); // Optionally remove the line after some time
+                    animateHops(hops, index + 1);
+                }, 1000); // Delay between hops
+            }
+        }
+
+        // Generate random users and display them on the map
+        var centerLat = 17.3850;
+        var centerLng = 78.4867;
+        var radius = 5000; // 5 km radius
+        var numUsers = 10;
+
+        // Add red zone geo-fence
+        var geoFence = L.circle([centerLat, centerLng], {
+            color: 'red',
+            fillColor: 'red',
+            fillOpacity: 0.3,
+            radius: radius
+        }).addTo(map).bindPopup('Red Zone Center: (' + centerLat + ', ' + centerLng + ')');
+
+        var users = generateRandomUsers(centerLat, centerLng, radius, numUsers);
+
+        users.forEach(function(user) {
+            L.marker([user.lat, user.lng]).addTo(map)
+                .bindPopup(user.name)
+                .openPopup();
+        });
+
+        // Find nearest neighbors and start the animation
+        var hops = findNearestNeighbors(users);
+        animateHops(hops);
+
+    </script>
+
+</body>
+</html>
