@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bluetooth Echo</title>
+  <style>
+    #logging-info {
+      width: 100%;
+      box-sizing: border-box;
+      height: 200px;
+      overflow: auto; /* Enable scrolling if the content is larger than the div */
+      border: 1px solid #000;
+      padding: 10px;
+      margin: 2px;
+      margin-bottom: 10px;
+    }
+    #logging-info p {
+      margin-bottom: 0.25em; /* Adjust this value as needed */
+      margin-top: 0.25em; /* Adjust this value as needed */
+    }
+  </style>
+</head>
+<body>
+  <button id="connect_device" onclick="connectButton()">Connect to device</button>
+  <h1>Bluetooth Echo</h1>
+  <input id="log-message-input" type="text" placeholder="Enter a message" />
+  <br/>
+  <button onclick="sendMessage()">Send message</button>
+  <div id="logging-info">
+    <!-- Log messages will be added here -->
+  </div>
+  <script src="./2.js"></script>
+</body>
+<script>
+  var bluetooth = null;
+  // shared UUIDs between MicroPython and JS
+  const UART_SERVICE_ID = '6E400001-B5A3-F393-E0A9-E50E24DCCA9E'.toLowerCase();
+  const CHARACTERISTIC_TX = '6E400003-B5A3-F393-E0A9-E50E24DCCA9E'.toLowerCase();
+  const CHARACTERISTIC_RX = '6E400002-B5A3-F393-E0A9-E50E24DCCA9E'.toLowerCase();
+</script>
+</html>
