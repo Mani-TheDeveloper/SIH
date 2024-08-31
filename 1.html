@@ -1,48 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Bluetooth Echo</title>
-  <style>
-    #logging-info {
-      width: 100%;
-      box-sizing: border-box;
-      height: 200px;
-      overflow: auto; /* Enable scrolling if the content is larger than the div */
-      border: 1px solid #000;
-      padding: 10px;
-      margin: 2px;
-      margin-bottom: 10px;
-    }
-    #logging-info p {
-      margin-bottom: 0.25em; /* Adjust this value as needed */
-      margin-top: 0.25em; /* Adjust this value as needed */
-    }
-    #device-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    #device-list li {
-      padding: 10px;
-      border-bottom: 1px solid #ccc;
-    }
-    #device-list li:last-child {
-      border-bottom: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Messaging App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #messages {
+            border: 1px solid #ddd;
+            padding: 10px;
+            width: 300px;
+            height: 200px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+        }
+        #messageInput {
+            width: 300px;
+        }
+    </style>
 </head>
 <body>
-  <button id="connect_device" onclick="connectButton()">Connect to device</button>
-  <h1>Bluetooth Echo</h1>
-  <input id="log-message-input" type="text" placeholder="Enter a message" />
-  <br/>
-  <button onclick="sendMessage()">Send message</button>
-  <div id="logging-info">
-    <!-- Log messages will be added here -->
-  </div>
-  <ul id="device-list">
-    <!-- Device list will be populated here -->
-  </ul>
+    <h1>WebRTC Messaging App</h1>
+    <div id="messages"></div>
+    <input id="messageInput" type="text" placeholder="Type a message..." />
+    <button id="sendButton">Send</button>
+
+    <script src="./2.js"></script>
 </body>
-<script src="./2.js"></script>
 </html>
