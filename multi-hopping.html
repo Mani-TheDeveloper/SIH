@@ -12,8 +12,7 @@
         }
         .hop-line {
             color: blue;
-            weight: 3;
-            dashArray: '5, 10';
+            weight: 4;
         }
     </style>
 </head>
@@ -53,50 +52,47 @@
             return users;
         }
 
-        // Function to find the nearest neighbor for each user
-        function findNearestNeighbors(users) {
+        // Function to form a network chain between users
+        function formNetworkChain(users) {
             var hops = [];
+            var visited = new Set();
 
             for (var i = 0; i < users.length - 1; i++) {
                 var user1 = users[i];
                 var nearestNeighbor = null;
                 var minDistance = Infinity;
 
-                for (var j = i + 1; j < users.length; j++) {
-                    var user2 = users[j];
-                    var distance = Math.sqrt(Math.pow(user2.lat - user1.lat, 2) + Math.pow(user2.lng - user1.lng, 2));
+                for (var j = 0; j < users.length; j++) {
+                    if (i !== j && !visited.has(j)) {
+                        var user2 = users[j];
+                        var distance = Math.sqrt(Math.pow(user2.lat - user1.lat, 2) + Math.pow(user2.lng - user1.lng, 2));
 
-                    if (distance < minDistance) {
-                        nearestNeighbor = user2;
-                        minDistance = distance;
+                        if (distance < minDistance) {
+                            nearestNeighbor = j;
+                            minDistance = distance;
+                        }
                     }
                 }
 
-                if (nearestNeighbor) {
-                    hops.push([user1, nearestNeighbor]);
+                if (nearestNeighbor !== null) {
+                    visited.add(nearestNeighbor);
+                    hops.push([user1, users[nearestNeighbor]]);
                 }
             }
 
             return hops;
         }
 
-        // Function to animate the hop lines between users
-        function animateHops(hops, index = 0) {
-            if (index < hops.length) {
-                var hop = hops[index];
-                var polyline = L.polyline([[hop[0].lat, hop[0].lng], [hop[1].lat, hop[1].lng]], {
-                    color: 'red',
-                    weight: 4,
-                    dashArray: '5, 5'
-                }).addTo(map)
-                .bindPopup('Hopping from ' + hop[0].name + ' to ' + hop[1].name)
-                .openPopup();
-
+        // Function to animate the drawing of the network chain on the map
+        function animateNetworkChain(hops, delay) {
+            hops.forEach(function(hop, index) {
                 setTimeout(function() {
-                    polyline.remove(); // Optionally remove the line after some time
-                    animateHops(hops, index + 1);
-                }, 1000); // Delay between hops
-            }
+                    L.polyline([[hop[0].lat, hop[0].lng], [hop[1].lat, hop[1].lng]], {
+                        color: 'blue',
+                        weight: 4
+                    }).addTo(map);
+                }, index * delay);
+            });
         }
 
         // Generate random users and display them on the map
@@ -111,19 +107,17 @@
             fillColor: 'red',
             fillOpacity: 0.3,
             radius: radius
-        }).addTo(map).bindPopup('Red Zone Center: (' + centerLat + ', ' + centerLng + ')');
+        }).addTo(map);
 
         var users = generateRandomUsers(centerLat, centerLng, radius, numUsers);
 
         users.forEach(function(user) {
-            L.marker([user.lat, user.lng]).addTo(map)
-                .bindPopup(user.name)
-                .openPopup();
+            L.marker([user.lat, user.lng]).addTo(map);
         });
 
-        // Find nearest neighbors and start the animation
-        var hops = findNearestNeighbors(users);
-        animateHops(hops);
+        // Form network chain and animate its drawing
+        var hops = formNetworkChain(users);
+        animateNetworkChain(hops, 500); // 500ms delay between drawing each hop
 
     </script>
 
