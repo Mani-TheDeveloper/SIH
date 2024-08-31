@@ -10,17 +10,26 @@ function connectButton() {
 
 async function requestDevice() {
   console.log('Requesting any Bluetooth Device...');
-  var device = await navigator.bluetooth.requestDevice({
+  var devices = await navigator.bluetooth.requestDevice({
     // filters: [...] <- Prefer filters to save energy & show relevant devices.
     acceptAllDevices: true,
     optionalServices: [UART_SERVICE_ID] // TODO
   });
-  await connectDevice(device);
-  console.log("Device connected");
+  console.log('Found devices:', devices);
+  populateDeviceList(devices);
 }
 
-async function onDisconnected() {
-  console.log('> Bluetooth Device disconnected');
+function populateDeviceList(devices) {
+  var deviceList = document.getElementById('device-list');
+  deviceList.innerHTML = '';
+  devices.forEach(device => {
+    var listItem = document.createElement('li');
+    listItem.textContent = device.name;
+    listItem.addEventListener('click', () => {
+      connectDevice(device);
+    });
+    deviceList.appendChild(listItem);
+  });
 }
 
 async function connectDevice(device) {
@@ -32,12 +41,17 @@ async function connectDevice(device) {
   await characteristic.writeValue(new Uint8Array([0x00]));
   await characteristic.startNotifications();
   characteristic.addEventListener('characteristicvaluechanged', handleNotifications);
+  console.log('Connected to device:', device.name);
+}
+
+async function onDisconnected() {
+  console.log('> Bluetooth Device disconnected');
 }
 
 async function handleNotifications(event) {
   var value = event.target.value;
   var message = new TextDecoder('utf-8').decode(value);
-  console.log('Received message: ' + message);
+  console.log('Received message:', message);
   document.getElementById('logging-info').innerHTML += '<p>' + message + '</p>';
 }
 
