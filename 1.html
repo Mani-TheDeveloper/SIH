@@ -17,6 +17,18 @@
       margin-bottom: 0.25em; /* Adjust this value as needed */
       margin-top: 0.25em; /* Adjust this value as needed */
     }
+    #device-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    #device-list li {
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+    }
+    #device-list li:last-child {
+      border-bottom: none;
+    }
   </style>
 </head>
 <body>
@@ -28,6 +40,9 @@
   <div id="logging-info">
     <!-- Log messages will be added here -->
   </div>
+  <ul id="device-list">
+    <!-- Device list will be populated here -->
+  </ul>
 </body>
 <script src="./2.js"></script>
 </html>
